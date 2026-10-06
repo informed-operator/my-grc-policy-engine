@@ -59,6 +59,7 @@ jobs:
       - name: 4. Generate GitHub Step Summary Report
         if: always()
         run: |
+          if [ ! -f audit_results.json ]; then touch audit_results.json; fi
           echo "# 🛡️ ISO 27001 Audit Report" >> $GITHUB_STEP_SUMMARY
           echo "### Controls Evaluated: **A.8.28 (Secure Coding)**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
