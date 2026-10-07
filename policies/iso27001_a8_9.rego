@@ -103,6 +103,10 @@ _has_baseline(asset) if {
 }
 
 _review_stale(asset) if {
+    not asset.baseline_reviewed_within_days
+}
+
+_review_stale(asset) if {
 	asset.baseline_reviewed_within_days == null
 }
 
