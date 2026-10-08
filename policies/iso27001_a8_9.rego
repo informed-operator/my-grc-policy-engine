@@ -47,13 +47,14 @@ violations contains findings.finding(
 	asset.id,
 	sprintf(
 		"Asset %q baseline review is %v days old; maximum allowed is %v days.",
-		[asset.id, asset.baseline_reviewed_within_days, review_max_days],
+		[asset.id, days, review_max_days],
 	),
 ) if {
 	some asset in in_scope_assets
 	_has_baseline(asset)
 	asset.baseline_approved == true
 	_review_stale(asset)
+	days := object.get(asset, "baseline_reviewed_within_days", "missing")
 }
 
 # Configuration is not monitored.
