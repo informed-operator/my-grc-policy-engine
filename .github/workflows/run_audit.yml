@@ -43,8 +43,7 @@ jobs:
       - name: 2. Execute GitHub Telemetry Collector
         env:
           GITHUB_TOKEN: ${{ secrets.AUDIT_PAT }}
-          # REPLACE 'yourusername' WITH YOUR ACTUAL GITHUB USERNAME
-          TARGET_REPOS: "yourusername/iso27001-grc-engine,yourusername/grc-test-target-failing"
+          TARGET_REPOS: "informed-operator/my-grc-policy-engine,informed-operator/grc-test-target-failing"
         run: |
           echo "=== Collecting Target Telemetry ==="
           python collectors/github_collector.py
