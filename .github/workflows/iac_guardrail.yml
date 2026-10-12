@@ -1,0 +1,52 @@
+name: "IaC Shift-Left Guardrails"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/**'
+      - 'policies/**'
+
+jobs:
+  iac-compliance-check:
+    name: OPA IaC Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Setup OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+
+      - name: Initialize & Plan Terraform
+        run: |
+          cd terraform
+          terraform init -backend=false
+          terraform plan -out=tfplan
+          terraform show -json tfplan > tfplan.json
+
+      - name: Run OPA Policy Check
+        run: |
+          # Evaluate tfplan.json against OPA rules
+          VIOLATIONS=$(opa eval --data policies/iac_s3_encryption.rego \
+                                --input terraform/tfplan.json \
+                                "data.iso27001.iac.a8_24.violations" \
+                                --format raw)
+
+          echo "OPA Evaluation Result:"
+          echo "$VIOLATIONS" | jq .
+
+          # Fail build if violations array is not empty
+          COUNT=$(echo "$VIOLATIONS" | jq 'length')
+          if [ "$COUNT" -gt "0" ]; then
+            echo "::error::IaC Guardrail Check Failed! $COUNT non-compliant IaC resource(s) detected."
+            exit 1
+          fi
